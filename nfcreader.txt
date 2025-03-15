@@ -1,0 +1,81 @@
+import wx
+import math
+
+class DeviceNotPresentPage(wx.Frame):
+    def __init__(self, *args, **kw):
+        super(DeviceNotPresentPage, self).__init__(*args, **kw)
+        self.angle = 0
+        self.InitUI()
+
+    def InitUI(self):
+        panel = wx.Panel(self)
+        panel.SetBackgroundColour('#F5F5F5')
+
+        # Top Bar
+        top_bar = wx.Panel(panel, pos=(0, 0), size=(400, 40))
+        top_bar.SetBackgroundColour('#1E3A8A')
+
+        nfc_tool = wx.StaticText(top_bar, label="NFC Tool", pos=(10, 10))
+        nfc_tool.SetForegroundColour('#FFFFFF')
+        nfc_tool.SetFont(wx.Font(12, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD))
+
+        version = wx.StaticText(top_bar, label="Version 1.0.9", pos=(300, 10))
+        version.SetForegroundColour('#FFFFFF')
+
+        # Animation Panel (moved higher)
+        self.animation_panel = wx.Panel(panel, pos=(150, 50), size=(100, 100))
+        self.animation_panel.Bind(wx.EVT_PAINT, self.OnPaint)
+
+        # Status Text (positioned below the animation)
+        status_text = wx.StaticText(panel, label="Device Not Present", pos=(120, 170))
+        status_text.SetFont(wx.Font(14, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD))
+
+        # Exit Button (blue color)
+        exit_button = wx.Button(panel, label="EXIT", pos=(150, 220), size=(100, 30))
+        exit_button.SetForegroundColour('#FFFFFF')  # White text color
+        exit_button.SetBackgroundColour('#1E3A8A')  # Blue background color
+        exit_button.Bind(wx.EVT_BUTTON, self.OnExit)
+
+        # Animation Timer
+        self.timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
+        self.timer.Start(50)  # 50ms interval for smooth animation
+
+        self.SetSize((400, 300))
+        self.Centre()
+
+    def OnTimer(self, event):
+        self.angle += 5
+        if self.angle >= 360:
+            self.angle = 0
+        self.animation_panel.Refresh()
+
+    def OnPaint(self, event):
+        dc = wx.PaintDC(self.animation_panel)
+        dc.SetBackground(wx.Brush('#F5F5F5'))
+        dc.Clear()
+
+        width, height = self.animation_panel.GetSize()
+        center_x, center_y = width // 2, height // 2
+        radius = 30
+
+        # Draw circle outline
+        dc.SetPen(wx.Pen('#CCCCCC', 2))
+        dc.SetBrush(wx.Brush('#F5F5F5'))
+        dc.DrawCircle(center_x, center_y, radius)
+
+        # Draw rotating line
+        dc.SetPen(wx.Pen('#1E3A8A', 2))
+        end_x = center_x + int(radius * math.cos(math.radians(self.angle)))
+        end_y = center_y + int(radius * math.sin(math.radians(self.angle)))
+        dc.DrawLine(center_x, center_y, end_x, end_y)
+
+    def OnExit(self, event):
+        self.timer.Stop()
+        self.Close()
+
+if __name__ == '__main__':
+    app = wx.App(False)
+    frame = DeviceNotPresentPage(None)
+    frame.Show()
+    app.MainLoop()
